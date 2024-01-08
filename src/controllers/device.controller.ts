@@ -24,7 +24,7 @@ export class DeviceController {
 
   @TypedRoute.Get('/')
   async getDevice(@TypedQuery() query: IDeviceQuery): Promise<IDeviceResponse> {
-    this.logger.log(`Query: `, query);
+    this.logger.log(`[getDevice] Query: `, query);
 
     if (!query.id && !query.mac) {
       return {
@@ -59,7 +59,7 @@ export class DeviceController {
   async getDevices(
     @TypedQuery() query: IDevicesQuery,
   ): Promise<IDevicesResponse> {
-    this.logger.log(`Query: `, query);
+    this.logger.log(`[getDevices] Query: `, query);
 
     if (!query.userId && !query.email) {
       return {
@@ -92,6 +92,8 @@ export class DeviceController {
 
   @Post('/')
   async registerDevice(@TypedBody() dto: IDeviceCreate) {
+    this.logger.log(`[registerDevice] DTO: `, dto);
+
     const user = this.userService.findUserById({ id: dto.userId });
 
     if (!user) {
@@ -117,6 +119,7 @@ export class DeviceController {
     @TypedBody()
     dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>,
   ) {
+    this.logger.log(`[updateFcmToken] DTO: `, dto);
     return this.deviceService.updateDeviceFcmToken(dto);
   }
 }
