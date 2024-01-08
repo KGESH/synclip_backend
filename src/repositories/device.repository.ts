@@ -19,7 +19,7 @@ export class DeviceRepository {
     return {
       id: device.id,
       userId: device.userId,
-      mac: device.mac,
+      mac: device.mac.toLowerCase(),
       alias: device.alias,
       deviceType: device.deviceType,
       fcmToken: device.fcmToken,
