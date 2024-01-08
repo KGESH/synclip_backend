@@ -18,6 +18,19 @@ model User {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   devices   Device[]
+  drive     Drive?
+}
+
+model Drive {
+  id           String    @id @db.Uuid /// @format uuid
+  userId       String    @unique @map("user_id") @db.Uuid /// @format uuid
+  baseFolderId String    @map("base_folder_id")
+  textFolderId String    @map("text_folder_id")
+  fileFolderId String    @map("file_folder_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Device {
