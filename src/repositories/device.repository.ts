@@ -13,6 +13,7 @@ import {
 @Injectable()
 export class DeviceRepository {
   private readonly logger = new Logger(DeviceRepository.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   private _transform(device: Device): IDevice {
