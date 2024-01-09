@@ -3,6 +3,7 @@ import { UserService } from '../services/user.service';
 import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
 import { IUser, IUserCreate, IUserQuery, IUserUpdate } from '../dtos/user.dto';
 import { IResponse } from '../dtos/response.dto';
+import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
 @Controller('users')
 export class UserController {
@@ -14,20 +15,14 @@ export class UserController {
   async getUser(@TypedQuery() query: IUserQuery): Promise<IResponse<IUser>> {
     const { id, email } = query;
 
-    if (!email && !id) {
-      return { status: 'error', message: 'id or email is required' };
-    }
+    if (!email && !id)
+      throw new EntityNotfoundException({ message: 'id or email is required' });
 
-    try {
-      const user = await this.userService.findUser(query);
+    const user = await this.userService.findUser(query);
 
-      if (!user) return { status: 'not_found', message: 'user not found' };
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-      return { status: 'success', data: user };
-    } catch (e) {
-      this.logger.error(e);
-      return { status: 'error', message: 'Unknown error' };
-    }
+    return { status: 'success', data: user };
   }
 
   @TypedRoute.Post('/')
@@ -37,23 +32,16 @@ export class UserController {
 
   @TypedRoute.Patch('/')
   async updateUser(@TypedBody() dto: IUserUpdate): Promise<IResponse<IUser>> {
-    try {
-      const found = await this.userService.findUser({ id: dto.id });
+    const found = await this.userService.findUser({ id: dto.id });
 
-      if (!found) return { status: 'not_found', message: 'user not found' };
+    if (!found)
+      throw new EntityNotfoundException({ message: 'user not found' });
 
-      const updated = await this.userService.updateUser(dto);
+    const updated = await this.userService.updateUser(dto);
 
-      return {
-        status: 'success',
-        data: updated,
-      };
-    } catch (e) {
-      this.logger.error(e);
-      return {
-        status: 'error',
-        message: 'Unknown error',
-      };
-    }
+    return {
+      status: 'success',
+      data: updated,
+    };
   }
 }

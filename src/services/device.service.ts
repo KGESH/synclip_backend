@@ -10,6 +10,9 @@ import {
 import { Prisma } from '@prisma/client';
 import { IResponse } from '../dtos/response.dto';
 import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
+import { RequiredArgsException } from '../exceptions/requiredArgs.exception';
+import { EntityConflictException } from '../exceptions/entityConflict.exception';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DeviceService {
@@ -17,47 +20,52 @@ export class DeviceService {
 
   constructor(private readonly deviceRepository: DeviceRepository) {}
 
-  async findDevice(dto: IDeviceQuery) {
-    return this.deviceRepository.findBy(dto);
+  async findDevice(query: IDeviceQuery) {
+    if (!query.id && !query.mac)
+      throw new RequiredArgsException({ message: 'id or mac is required' });
+
+    return this.deviceRepository.findBy(query);
   }
 
-  async findDevices(args: IDevicesQuery) {
-    return this.deviceRepository.findMany(args);
+  async findDevices(query: IDevicesQuery) {
+    if (!query.userId && !query.email) {
+      throw new RequiredArgsException({
+        message: 'userId or email is required',
+      });
+    }
+
+    return this.deviceRepository.findMany(query);
   }
 
   private async _createDevice(dto: IDeviceCreate) {
     return this.deviceRepository.create(dto);
   }
 
-  async registerDevice(dto: IDeviceCreate): Promise<IResponse<IDevice>> {
+  async registerDevice(dto: IDeviceCreate): Promise<IDevice> {
     // Todo: Pricing plan check
     // Todo: Maximum device count check
     try {
-      const device = await this._createDevice(dto);
-      return {
-        status: 'success',
-        data: device,
-      };
+      return await this._createDevice(dto);
     } catch (e) {
       // Unique constraint error
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          return {
-            status: 'error',
+          throw new EntityConflictException({
             message: `Device already exists. Check your MAC address.`,
-          };
+          });
         }
       }
 
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
+      throw new UnknownException(e);
     }
   }
 
   private async _updateDevice(dto: IDeviceUpdate) {
-    return this.deviceRepository.update(dto);
+    try {
+      return this.deviceRepository.update(dto);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 
   async updateDeviceFcmToken(dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>) {

@@ -4,6 +4,7 @@ import { IUser, IUserCreate } from '../dtos/user.dto';
 import { Prisma, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class UserRepository {
@@ -34,13 +35,10 @@ export class UserRepository {
       return this._transform(user);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        // Not found
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
-          return null;
-        }
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
       }
-      console.error(e);
-      throw new Error(e);
+
+      throw new UnknownException(e);
     }
   }
 

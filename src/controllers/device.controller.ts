@@ -11,6 +11,7 @@ import {
   IDeviceUpdate,
 } from '../dtos/device.dto';
 import { IResponse } from '../dtos/response.dto';
+import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
 @Controller('devices')
 export class DeviceController {
@@ -26,94 +27,52 @@ export class DeviceController {
   async getDevice(
     @TypedQuery() query: IDeviceQuery,
   ): Promise<IResponse<IDevice>> {
-    this.logger.log(`[getDevice] Query: `, query);
+    this.logger.log(`[${this.getDevice.name}]`, query);
 
-    if (!query.id && !query.mac) {
-      return {
-        status: 'error',
-        message: 'id or mac is required',
-      };
-    }
+    const device = await this.deviceService.findDevice(query);
 
-    try {
-      const device = await this.deviceService.findDevice(query);
+    if (!device)
+      throw new EntityNotfoundException({ message: 'device not found' });
 
-      if (!device) {
-        return {
-          status: 'not_found',
-          message: 'device not found',
-        };
-      }
-
-      return {
-        status: 'success',
-        data: device,
-      };
-    } catch (e) {
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
-    }
+    return {
+      status: 'success',
+      data: device,
+    };
   }
 
   @TypedRoute.Get('/all')
   async getDevices(
     @TypedQuery() query: IDevicesQuery,
   ): Promise<IResponse<IDevice[]>> {
-    this.logger.log(`[getDevices] Query: `, query);
+    this.logger.log(`[${this.getDevices.name}]`, query);
 
-    if (!query.userId && !query.email) {
-      return {
-        status: 'error',
-        message: 'userId or email is required',
-      };
-    }
+    const devices = await this.deviceService.findDevices(query);
 
-    try {
-      const devices = await this.deviceService.findDevices(query);
+    if (devices?.length === 0)
+      throw new EntityNotfoundException({ message: 'devices not found' });
 
-      if (!devices) {
-        return {
-          status: 'not_found',
-          message: 'devices not found',
-        };
-      }
-
-      return {
-        status: 'success',
-        data: devices,
-      };
-    } catch (e) {
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
-    }
+    return {
+      status: 'success',
+      data: devices,
+    };
   }
 
   @Post('/')
   async registerDevice(@TypedBody() dto: IDeviceCreate) {
-    this.logger.log(`[registerDevice] DTO: `, dto);
+    this.logger.log(`[${this.registerDevice.name}]`, dto);
 
     const user = this.userService.findUser({ id: dto.userId });
 
-    if (!user) {
-      return {
-        status: 'not_found',
-        message: 'user not found',
-      };
-    }
+    if (!user) new EntityNotfoundException({ message: 'user not found' });
 
-    const response = await this.deviceService.registerDevice(dto);
+    const device = await this.deviceService.registerDevice(dto);
 
-    if (response.status === 'success') {
-      this.connection.updateConnection({
-        ...response.data,
-      });
-    }
+    this.connection.updateConnection(device);
 
-    return response;
+    return {
+      status: 'success',
+      data: device,
+    };
   }
 
   @Patch('/fcm')
@@ -121,7 +80,7 @@ export class DeviceController {
     @TypedBody()
     dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>,
   ) {
-    this.logger.log(`[updateFcmToken] DTO: `, dto);
+    this.logger.log(`[${this.updateFcmToken.name}]`, dto);
     return this.deviceService.updateDeviceFcmToken(dto);
   }
 }

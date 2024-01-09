@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DriveRepository } from '../repositories/drive.repository';
 import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
-import { IResponse } from '../dtos/response.dto';
 import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DriveService {
@@ -15,32 +15,27 @@ export class DriveService {
     return this.driveRepository.findBy(dto);
   }
 
-  async createDrive(dto: IDriveCreate): Promise<IResponse<IDrive>> {
+  async createDrive(dto: IDriveCreate): Promise<IDrive> {
     try {
-      const drive = await this.driveRepository.create(dto);
-      return {
-        status: 'success',
-        data: drive,
-      };
+      return await this.driveRepository.create(dto);
     } catch (e) {
-      // Unique constraint error
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          return {
-            status: 'error',
+          throw new ConflictException({
             message: `Synclip folders already exists. Check your drive ids.`,
-          };
+          });
         }
       }
 
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
+      throw new UnknownException(e);
     }
   }
 
   async updateFolderId(dto: IDriveUpdate) {
-    return this.driveRepository.update(dto);
+    try {
+      return await this.driveRepository.update(dto);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }

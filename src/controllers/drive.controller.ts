@@ -9,6 +9,7 @@ import {
   IDriveUpdate,
 } from '../dtos/drive.dto';
 import { IResponse } from '../dtos/response.dto';
+import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
 @Controller('drive')
 export class DriveController {
@@ -25,47 +26,19 @@ export class DriveController {
   ): Promise<IResponse<IDrive>> {
     this.logger.debug(`[getDrive] Query: `, query);
 
-    if (!query.userId && !query.email) {
-      return {
-        status: 'error',
-        message: 'userId or email is required',
-      };
-    }
+    const user = await this.userService.findUser(query);
 
-    try {
-      const user = await this.userService.findUser({
-        id: query.userId,
-        email: query.email,
-      });
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-      if (!user) {
-        return {
-          status: 'error',
-          message: 'user not found',
-        };
-      }
+    const drive = await this.driveService.findDrive({ userId: user.id });
 
-      const drive = await this.driveService.findDrive({
-        userId: user.id,
-      });
+    if (!drive)
+      throw new EntityNotfoundException({ message: 'drive not found' });
 
-      if (!drive) {
-        return {
-          status: 'not_found',
-          message: 'drive not found',
-        };
-      }
-
-      return {
-        status: 'success',
-        data: drive,
-      };
-    } catch (e) {
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
-    }
+    return {
+      status: 'success',
+      data: drive,
+    };
   }
 
   @Post('/')
@@ -76,19 +49,25 @@ export class DriveController {
 
     const user = this.userService.findUser({ id: dto.userId });
 
-    if (!user) {
-      return {
-        status: 'not_found',
-        message: 'user not found',
-      };
-    }
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-    return await this.driveService.createDrive(dto);
+    const drive = await this.driveService.createDrive(dto);
+
+    return {
+      status: 'success',
+      data: drive,
+    };
   }
 
   @Patch('/')
-  updateFolderId(@TypedBody() dto: IDriveUpdate) {
-    this.logger.log(`[updateFcmToken] DTO: `, dto);
-    return this.driveService.updateFolderId(dto);
+  async updateFolderId(
+    @TypedBody() dto: IDriveUpdate,
+  ): Promise<IResponse<IDrive>> {
+    const updated = await this.driveService.updateFolderId(dto);
+
+    return {
+      status: 'success',
+      data: updated,
+    };
   }
 }
