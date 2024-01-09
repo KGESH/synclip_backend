@@ -1,22 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
 import { IUser, IUserCreate } from '../dtos/user.dto';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  PRISMA_ENTITY_NOT_FOUND,
-  PRISMA_UNIQUE_CONSTRAINT_FAILED,
-} from '../constants/prisma.constant';
-import { UnknownException } from '../exceptions/unknown.exception';
-import { EntityConflictException } from '../exceptions/entityConflict.exception';
+import { BaseRepository } from './base.repository';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository extends BaseRepository<User, IUser> {
   private readonly logger = new Logger(UserRepository.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
-  private _transform(user: User): IUser {
+  protected _transform(user: User): IUser {
     return {
       id: user.id,
       email: user.email,
@@ -38,17 +35,17 @@ export class UserRepository {
 
       return this._transform(user);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
-      }
-
-      throw new UnknownException(e);
+      return this._handlePrismaNotFoundError(e, `User not found.`);
     }
   }
 
   async findMany() {
-    const users = await this.prisma.user.findMany();
-    return users.map((user) => this._transform(user));
+    try {
+      const users = await this.prisma.user.findMany();
+      return users.map((user) => this._transform(user));
+    } catch (e) {
+      this._handlePrismaError(e);
+    }
   }
 
   async create({ email, nickname }: IUserCreate) {
@@ -63,15 +60,7 @@ export class UserRepository {
 
       return this._transform(user);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          throw new EntityConflictException({
-            message: 'Email already exists',
-          });
-        }
-      }
-
-      throw new UnknownException(e);
+      this._handlePrismaError(e, `User already exists.`);
     }
   }
 
@@ -84,7 +73,7 @@ export class UserRepository {
 
       return this._transform(user);
     } catch (e) {
-      throw new UnknownException(e);
+      this._handlePrismaError(e);
     }
   }
 }

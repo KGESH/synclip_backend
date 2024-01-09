@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, Shortcuts } from '@prisma/client';
+import { Shortcuts } from '@prisma/client';
 import { PrismaService } from '../services/prisma.service';
-
 import {
   IShortcuts,
   IShortcutsCreate,
@@ -10,20 +9,17 @@ import {
   IShortQuery,
 } from '../dtos/shortcuts.dto';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  PRISMA_ENTITY_NOT_FOUND,
-  PRISMA_UNIQUE_CONSTRAINT_FAILED,
-} from '../constants/prisma.constant';
-import { UnknownException } from '../exceptions/unknown.exception';
-import { EntityConflictException } from '../exceptions/entityConflict.exception';
+import { BaseRepository } from './base.repository';
 
 @Injectable()
-export class ShortcutsRepository {
+export class ShortcutsRepository extends BaseRepository<Shortcuts, IShortcuts> {
   private readonly logger = new Logger(ShortcutsRepository.name);
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {
+    super();
+  }
 
-  private _transform(shortcuts: Shortcuts): IShortcuts {
+  protected _transform(shortcuts: Shortcuts): IShortcuts {
     return {
       id: shortcuts.id,
       userId: shortcuts.userId,
@@ -43,15 +39,7 @@ export class ShortcutsRepository {
 
       return this._transform(shortcuts);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          throw new EntityConflictException({
-            message: `User already created default shortcuts.`,
-          });
-        }
-      }
-
-      throw new UnknownException(e);
+      this._handlePrismaError(e, `User already created default shortcuts.`);
     }
   }
 
@@ -65,11 +53,7 @@ export class ShortcutsRepository {
 
       return this._transform(shortcuts);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
-      }
-
-      throw new UnknownException(e);
+      return this._handlePrismaNotFoundError(e, `Shortcuts not found.`);
     }
   }
 
@@ -86,7 +70,7 @@ export class ShortcutsRepository {
 
       return this._transform(updated);
     } catch (e) {
-      throw new UnknownException(e);
+      this._handlePrismaError(e);
     }
   }
 }

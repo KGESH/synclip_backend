@@ -1,21 +1,19 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
-import { Prisma, Drive } from '@prisma/client';
+import { Drive } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
-import {
-  PRISMA_ENTITY_NOT_FOUND,
-  PRISMA_UNIQUE_CONSTRAINT_FAILED,
-} from '../constants/prisma.constant';
-import { UnknownException } from '../exceptions/unknown.exception';
+import { BaseRepository } from './base.repository';
 
 @Injectable()
-export class DriveRepository {
+export class DriveRepository extends BaseRepository<Drive, IDrive> {
   private readonly logger = new Logger(DriveRepository.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
-  private _transform(drive: Drive): IDrive {
+  protected _transform(drive: Drive): IDrive {
     return {
       id: drive.id,
       userId: drive.userId,
@@ -35,11 +33,7 @@ export class DriveRepository {
 
       return this._transform(drive);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
-      }
-
-      throw new UnknownException(e);
+      return this._handlePrismaNotFoundError(e, `Drive not found.`);
     }
   }
 
@@ -54,15 +48,7 @@ export class DriveRepository {
 
       return this._transform(drive);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          throw new ConflictException({
-            message: `Synclip folders already exists. Check your drive ids.`,
-          });
-        }
-      }
-
-      throw new UnknownException(e);
+      this._handlePrismaError(e, `Synclip folders already exists.`);
     }
   }
 
@@ -75,7 +61,7 @@ export class DriveRepository {
 
       return this._transform(drive);
     } catch (e) {
-      throw new UnknownException(e);
+      this._handlePrismaError(e);
     }
   }
 }
