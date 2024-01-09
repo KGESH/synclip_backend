@@ -12,4 +12,6 @@ export type IShortcuts = {
 
 export type IShortcutsCreate = Omit<IShortcuts, 'id'>;
 
+export type IShortQuery = Pick<IShortcuts, 'userId'>;
+
 export type IShortcutsUpdate = Pick<IShortcuts, 'userId' | 'shortcuts'>;

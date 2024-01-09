@@ -7,9 +7,15 @@ import {
   IShortcutsCreate,
   IShortcutsSchema,
   IShortcutsUpdate,
+  IShortQuery,
 } from '../dtos/shortcuts.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
+import {
+  PRISMA_ENTITY_NOT_FOUND,
+  PRISMA_UNIQUE_CONSTRAINT_FAILED,
+} from '../constants/prisma.constant';
+import { UnknownException } from '../exceptions/unknown.exception';
+import { EntityConflictException } from '../exceptions/entityConflict.exception';
 
 @Injectable()
 export class ShortcutsRepository {
@@ -26,17 +32,29 @@ export class ShortcutsRepository {
   }
 
   async create(dto: IShortcutsCreate) {
-    const shortcuts = await this.prismaService.shortcuts.create({
-      data: {
-        id: uuidv4(),
-        ...dto,
-      },
-    });
+    try {
+      const shortcuts = await this.prismaService.shortcuts.create({
+        data: {
+          id: uuidv4(),
+          ...dto,
+        },
+      });
 
-    return this._transform(shortcuts);
+      return this._transform(shortcuts);
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
+          throw new EntityConflictException({
+            message: `User already created default shortcuts.`,
+          });
+        }
+      }
+
+      throw new UnknownException(e);
+    }
   }
 
-  async findBy({ userId }: Pick<IShortcuts, 'userId'>) {
+  async findBy({ userId }: IShortQuery) {
     try {
       const shortcuts = await this.prismaService.shortcuts.findUniqueOrThrow({
         where: {
@@ -47,27 +65,27 @@ export class ShortcutsRepository {
       return this._transform(shortcuts);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        // Not found
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
-          return null;
-        }
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
       }
 
-      this.logger.error(e);
-      throw new Error(e);
+      throw new UnknownException(e);
     }
   }
 
   async update({ userId, shortcuts }: IShortcutsUpdate) {
-    const updated = await this.prismaService.shortcuts.update({
-      where: {
-        userId,
-      },
-      data: {
-        shortcuts,
-      },
-    });
+    try {
+      const updated = await this.prismaService.shortcuts.update({
+        where: {
+          userId,
+        },
+        data: {
+          shortcuts,
+        },
+      });
 
-    return this._transform(updated);
+      return this._transform(updated);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }

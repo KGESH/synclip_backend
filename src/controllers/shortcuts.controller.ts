@@ -9,6 +9,7 @@ import {
 } from '../dtos/shortcuts.dto';
 import { IResponse } from '../dtos/response.dto';
 import { tags } from 'typia';
+import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
 @Controller('shortcuts')
 export class ShortcutsController {
@@ -23,29 +24,16 @@ export class ShortcutsController {
   async getShortcuts(
     @TypedParam('userId') userId: string & tags.Format<'uuid'>,
   ): Promise<IResponse<IShortcuts>> {
-    this.logger.debug(`[getShortcuts] Param: `, userId);
+    this.logger.debug(`[${this.getShortcuts.name}]`, userId);
 
-    const user = await this.userService.findUser({
-      id: userId,
-    });
+    const user = await this.userService.findUser({ id: userId });
 
-    if (!user) {
-      return {
-        status: 'error',
-        message: 'user not found',
-      };
-    }
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-    const shortcuts = await this.shortcutsService.findShortcuts({
-      userId,
-    });
+    const shortcuts = await this.shortcutsService.findShortcuts({ userId });
 
-    if (!shortcuts) {
-      return {
-        status: 'not_found',
-        message: 'shortcuts not found',
-      };
-    }
+    if (!shortcuts)
+      throw new EntityNotfoundException({ message: 'shortcuts not found' });
 
     return {
       status: 'success',
@@ -57,50 +45,27 @@ export class ShortcutsController {
   async createShortcuts(
     @TypedBody() dto: IShortcutsCreate,
   ): Promise<IResponse<IShortcuts>> {
-    this.logger.debug(`[createShortcuts] Body: `, dto);
+    this.logger.debug(`[${this.createShortcuts.name}]`, dto);
 
-    if (!dto.userId) {
-      return {
-        status: 'error',
-        message: 'userId is required',
-      };
-    }
+    const user = await this.userService.findUser({ id: dto.userId });
 
-    const user = await this.userService.findUser({
-      id: dto.userId,
-    });
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-    if (!user) {
-      return {
-        status: 'error',
-        message: 'user not found',
-      };
-    }
+    const shortcuts = await this.shortcutsService.createShortcuts(dto);
 
-    return this.shortcutsService.createShortcuts(dto);
+    return {
+      status: 'success',
+      data: shortcuts,
+    };
   }
 
   @TypedRoute.Patch('/')
   async updateShortcuts(@TypedBody() dto: IShortcutsUpdate) {
     this.logger.debug(`[updateShortcuts] Body: `, dto);
 
-    if (!dto.userId) {
-      return {
-        status: 'error',
-        message: 'userId is required',
-      };
-    }
+    const user = await this.userService.findUser({ id: dto.userId });
 
-    const user = await this.userService.findUser({
-      id: dto.userId,
-    });
-
-    if (!user) {
-      return {
-        status: 'error',
-        message: 'user not found',
-      };
-    }
+    if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
     return this.shortcutsService.updateShortcuts(dto);
   }

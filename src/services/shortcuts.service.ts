@@ -4,10 +4,9 @@ import {
   IShortcuts,
   IShortcutsCreate,
   IShortcutsUpdate,
+  IShortQuery,
 } from '../dtos/shortcuts.dto';
-import { Prisma } from '@prisma/client';
-import { IResponse } from '../dtos/response.dto';
-import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class ShortcutsService {
@@ -15,36 +14,19 @@ export class ShortcutsService {
 
   constructor(private readonly shortcutsRepository: ShortcutsRepository) {}
 
-  async createShortcuts(dto: IShortcutsCreate): Promise<IResponse<IShortcuts>> {
-    try {
-      const shortcuts = await this.shortcutsRepository.create(dto);
-      return {
-        status: 'success',
-        data: shortcuts,
-      };
-    } catch (e) {
-      // Unique constraint error
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          return {
-            status: 'error',
-            message: `User already created default shortcuts.`,
-          };
-        }
-      }
-
-      return {
-        status: 'error',
-        message: `Unknown error ${e}`,
-      };
-    }
+  async createShortcuts(dto: IShortcutsCreate): Promise<IShortcuts> {
+    return await this.shortcutsRepository.create(dto);
   }
 
-  async findShortcuts(dto: Pick<IShortcutsCreate, 'userId'>) {
-    return this.shortcutsRepository.findBy(dto);
+  async findShortcuts(query: IShortQuery) {
+    return this.shortcutsRepository.findBy(query);
   }
 
   async updateShortcuts(dto: IShortcutsUpdate) {
-    return this.shortcutsRepository.update(dto);
+    try {
+      return this.shortcutsRepository.update(dto);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }

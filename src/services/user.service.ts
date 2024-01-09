@@ -15,8 +15,11 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async findUser({ id, email }: IUserQuery): Promise<IUser | null> {
-    if (!id && !email)
-      throw new RequiredArgsException({ message: 'id or email is required' });
+    if (!id && !email) {
+      throw new RequiredArgsException({
+        message: 'id(User ID) or email is required',
+      });
+    }
 
     if (id) return await this.userRepository.findBy({ id });
 
