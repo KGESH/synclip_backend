@@ -11,7 +11,7 @@ import {
 import { IResponse } from '../dtos/response.dto';
 import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
-@Controller('drive')
+@Controller('drives')
 export class DriveController {
   private readonly logger = new Logger(DriveController.name);
 
