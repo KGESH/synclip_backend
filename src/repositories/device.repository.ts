@@ -9,7 +9,12 @@ import {
   IDevicesQuery,
   IDeviceUpdate,
 } from '../dtos/device.dto';
-import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
+import {
+  PRISMA_ENTITY_NOT_FOUND,
+  PRISMA_UNIQUE_CONSTRAINT_FAILED,
+} from '../constants/prisma.constant';
+import { EntityConflictException } from '../exceptions/entityConflict.exception';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DeviceRepository {
@@ -62,26 +67,42 @@ export class DeviceRepository {
   }
 
   async create({ userId, mac, alias, deviceType, fcmToken }: IDeviceCreate) {
-    const device = await this.prisma.device.create({
-      data: {
-        id: uuidv4(),
-        userId,
-        mac,
-        alias,
-        deviceType,
-        fcmToken,
-      },
-    });
+    try {
+      const device = await this.prisma.device.create({
+        data: {
+          id: uuidv4(),
+          userId,
+          mac,
+          alias,
+          deviceType,
+          fcmToken,
+        },
+      });
 
-    return this._transform(device);
+      return this._transform(device);
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
+          throw new EntityConflictException({
+            message: `Device already exists. Check your MAC address.`,
+          });
+        }
+      }
+
+      throw new UnknownException(e);
+    }
   }
 
   async update({ id, ...data }: IDeviceUpdate) {
-    const device = await this.prisma.device.update({
-      where: { id },
-      data,
-    });
+    try {
+      const device = await this.prisma.device.update({
+        where: { id },
+        data,
+      });
 
-    return this._transform(device);
+      return this._transform(device);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }

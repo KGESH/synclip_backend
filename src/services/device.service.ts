@@ -38,34 +38,17 @@ export class DeviceService {
   }
 
   private async _createDevice(dto: IDeviceCreate) {
-    return this.deviceRepository.create(dto);
+    return await this.deviceRepository.create(dto);
   }
 
   async registerDevice(dto: IDeviceCreate): Promise<IDevice> {
     // Todo: Pricing plan check
     // Todo: Maximum device count check
-    try {
-      return await this._createDevice(dto);
-    } catch (e) {
-      // Unique constraint error
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          throw new EntityConflictException({
-            message: `Device already exists. Check your MAC address.`,
-          });
-        }
-      }
-
-      throw new UnknownException(e);
-    }
+    return await this._createDevice(dto);
   }
 
   private async _updateDevice(dto: IDeviceUpdate) {
-    try {
-      return this.deviceRepository.update(dto);
-    } catch (e) {
-      throw new UnknownException(e);
-    }
+    return this.deviceRepository.update(dto);
   }
 
   async updateDeviceFcmToken(dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>) {
