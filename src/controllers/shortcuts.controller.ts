@@ -1,7 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { ShortcutsService } from '../services/shortcuts.service';
 import { UserService } from '../services/user.service';
-import { TypedBody, TypedParam, TypedRoute } from '@nestia/core';
+import { TypedBody, TypedParam, TypedQuery, TypedRoute } from '@nestia/core';
 import {
   IShortcuts,
   IShortcutsCreate,
@@ -20,17 +20,20 @@ export class ShortcutsController {
     private readonly shortcutsService: ShortcutsService,
   ) {}
 
-  @TypedRoute.Get('/:userId')
+  @TypedRoute.Get('/')
   async getShortcuts(
-    @TypedParam('userId') userId: string & tags.Format<'uuid'>,
+    // @TypedQuery() userId: string & tags.Format<'uuid'>,
+    @TypedQuery() query: Pick<IShortcuts, 'userId'>,
   ): Promise<IResponse<IShortcuts>> {
-    this.logger.debug(`[${this.getShortcuts.name}]`, userId);
+    this.logger.debug(`[${this.getShortcuts.name}]`, query);
 
-    const user = await this.userService.findUser({ id: userId });
+    const user = await this.userService.findUser({ id: query.userId });
 
     if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
-    const shortcuts = await this.shortcutsService.findShortcuts({ userId });
+    const shortcuts = await this.shortcutsService.findShortcuts({
+      userId: query.userId,
+    });
 
     if (!shortcuts)
       throw new EntityNotfoundException({ message: 'shortcuts not found' });

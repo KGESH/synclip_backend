@@ -28,6 +28,7 @@ export class ShortcutsRepository {
       id: shortcuts.id,
       userId: shortcuts.userId,
       shortcuts: shortcuts.shortcuts as IShortcutsSchema,
+      updatedAt: shortcuts.updatedAt.toISOString(),
     };
   }
 

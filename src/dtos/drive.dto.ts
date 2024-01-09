@@ -13,9 +13,7 @@ export type IDriveCreate = Omit<IDrive, 'id'>;
 
 export type IDriveUpdate = Pick<IDrive, 'userId'> & Partial<Omit<IDrive, 'id'>>;
 
-export type IDriveFoldersQuery = Partial<
-  Pick<IUser, 'email'> & Pick<IDrive, 'userId'>
->;
+export type IDriveFoldersQuery = Partial<Pick<IUser, 'id' | 'email'>>;
 
 export type IFile = {
   id: string;
