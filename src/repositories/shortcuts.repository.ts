@@ -24,24 +24,11 @@ export class ShortcutsRepository {
     };
   }
 
-  private _toLowercase(shortcuts: IShortcutsSchema): IShortcutsSchema {
-    const lowerCaseShortcuts = Object.entries(shortcuts).reduce(
-      (acc, [key, value]) => {
-        acc[key] = value.toLowerCase();
-        return acc;
-      },
-      {} as IShortcutsSchema,
-    );
-
-    return lowerCaseShortcuts;
-  }
-
   async create(dto: IShortcutsCreate) {
     const shortcuts = await this.prismaService.shortcuts.create({
       data: {
         id: uuidv4(),
-        userId: dto.userId,
-        shortcuts: this._toLowercase(dto.shortcuts),
+        ...dto,
       },
     });
 
@@ -76,7 +63,7 @@ export class ShortcutsRepository {
         userId,
       },
       data: {
-        shortcuts: this._toLowercase(shortcuts),
+        shortcuts,
       },
     });
 
