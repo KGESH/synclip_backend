@@ -24,7 +24,7 @@ export class DriveController {
   async getDrive(
     @TypedQuery() query: IDriveFoldersQuery,
   ): Promise<IResponse<IDrive>> {
-    this.logger.debug(`[getDrive] Query: `, query);
+    this.logger.debug(`[${this.getDrive.name}]`, query);
 
     const user = await this.userService.findUser(query);
 
@@ -45,7 +45,7 @@ export class DriveController {
   async registerDrive(
     @TypedBody() dto: IDriveCreate,
   ): Promise<IResponse<IDrive>> {
-    this.logger.log(`[registerDrive] DTO: `, dto);
+    this.logger.log(`[${this.registerDrive.name}]`, dto);
 
     const user = this.userService.findUser({ id: dto.userId });
 

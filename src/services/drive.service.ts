@@ -16,26 +16,10 @@ export class DriveService {
   }
 
   async createDrive(dto: IDriveCreate): Promise<IDrive> {
-    try {
-      return await this.driveRepository.create(dto);
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
-          throw new ConflictException({
-            message: `Synclip folders already exists. Check your drive ids.`,
-          });
-        }
-      }
-
-      throw new UnknownException(e);
-    }
+    return await this.driveRepository.create(dto);
   }
 
   async updateFolderId(dto: IDriveUpdate) {
-    try {
-      return await this.driveRepository.update(dto);
-    } catch (e) {
-      throw new UnknownException(e);
-    }
+    return await this.driveRepository.update(dto);
   }
 }

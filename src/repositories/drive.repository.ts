@@ -1,14 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
 import { Prisma, Drive } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
 import {
-  IDrive,
-  IDriveCreate,
-  IDriveFoldersQuery,
-  IDriveUpdate,
-} from '../dtos/drive.dto';
-import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
+  PRISMA_ENTITY_NOT_FOUND,
+  PRISMA_UNIQUE_CONSTRAINT_FAILED,
+} from '../constants/prisma.constant';
+import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DriveRepository {
@@ -37,34 +36,46 @@ export class DriveRepository {
       return this._transform(drive);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        // Not found
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
-          return null;
-        }
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
       }
 
-      this.logger.error(e);
-      throw new Error(e);
+      throw new UnknownException(e);
     }
   }
 
   async create(dto: IDriveCreate) {
-    const drive = await this.prisma.drive.create({
-      data: {
-        id: uuidv4(),
-        ...dto,
-      },
-    });
+    try {
+      const drive = await this.prisma.drive.create({
+        data: {
+          id: uuidv4(),
+          ...dto,
+        },
+      });
 
-    return this._transform(drive);
+      return this._transform(drive);
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
+          throw new ConflictException({
+            message: `Synclip folders already exists. Check your drive ids.`,
+          });
+        }
+      }
+
+      throw new UnknownException(e);
+    }
   }
 
   async update({ userId, ...data }: IDriveUpdate) {
-    const drive = await this.prisma.drive.update({
-      where: { userId },
-      data,
-    });
+    try {
+      const drive = await this.prisma.drive.update({
+        where: { userId },
+        data,
+      });
 
-    return this._transform(drive);
+      return this._transform(drive);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }
