@@ -94,7 +94,7 @@ export class DeviceController {
   async registerDevice(@TypedBody() dto: IDeviceCreate) {
     this.logger.log(`[registerDevice] DTO: `, dto);
 
-    const user = this.userService.findUserById({ id: dto.userId });
+    const user = this.userService.findUser({ id: dto.userId });
 
     if (!user) {
       return {

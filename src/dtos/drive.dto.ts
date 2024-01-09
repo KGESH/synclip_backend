@@ -1,4 +1,5 @@
 import { tags } from 'typia';
+import { IUser } from './user.dto';
 
 export type IFile = {
   id: string;
@@ -27,11 +28,13 @@ export type IDriveCreate = Omit<IDrive, 'id'>;
 
 export type IDriveUpdate = Pick<IDrive, 'userId'> & Partial<Omit<IDrive, 'id'>>;
 
-export type IDriveFoldersQuery = Pick<IDrive, 'userId'>;
+export type IDriveFoldersQuery = Partial<
+  Pick<IUser, 'email'> & Pick<IDrive, 'userId'>
+>;
 
 export type IDriveResponseSuccess = {
   status: 'success';
-  data: Omit<IDrive, 'id' | 'userId'>;
+  data: IDrive;
 };
 
 export type IDriveResponseFail = {

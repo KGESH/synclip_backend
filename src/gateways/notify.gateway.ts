@@ -35,6 +35,7 @@ export class NotifyGateway
 
   async handleConnection(client: Socket) {
     this.logger.log(`==========Websocket client connected==========`);
+
     const url = client.request.url;
     const params = new URLSearchParams(url?.split('?')[1]);
 
@@ -65,8 +66,10 @@ export class NotifyGateway
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`==========Websocket client disconnected==========`);
-    this.logger.log(`Client: `, client.id);
+    this.logger.debug(
+      `==========Websocket client disconnected==========`,
+      client.id,
+    );
 
     // Remove client
     this.connectionService.removeConnection(client.id);
@@ -74,21 +77,17 @@ export class NotifyGateway
 
   @SubscribeMessage('ping')
   handlePing(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
-    this.logger.log('[Websocket ping]', data);
+    this.logger.debug('[Websocket ping]', data);
     client.emit('pong', 'pong');
-  }
-
-  @SubscribeMessage('events')
-  handleEvent(@MessageBody() data: string): string {
-    this.logger.log(`==========Websocket message received==========`);
-    this.logger.log(`Payload: `, data);
-    return data;
   }
 
   @SubscribeMessage('copy')
   copyHandler(@MessageBody() data: unknown, @ConnectedSocket() client: Socket) {
-    this.logger.log(`==========Websocket copy message received==========`);
-    this.logger.log(`Payload: `, data);
+    this.logger.debug(
+      `==========Websocket copy message received==========`,
+      data,
+    );
+    this.logger.debug(this.connectionService.getConnections());
 
     const connections = this.connectionService.getConnections();
 
@@ -96,8 +95,8 @@ export class NotifyGateway
       (connection) => connection.socketId === client.id,
     );
 
-    if (!copiedDevice) {
-      this.logger.log(`Copied device not found`);
+    if (!copiedDevice || !copiedDevice.userId) {
+      this.logger.log(`Copied device not found or not registered`);
       return;
     }
 

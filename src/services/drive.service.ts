@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DriveRepository } from '../repositories/drive.repository';
 import {
+  IDrive,
   IDriveCreate,
-  IDriveFoldersQuery,
   IDriveResponse,
   IDriveUpdate,
 } from '../dtos/drive.dto';
@@ -14,7 +14,7 @@ export class DriveService {
 
   constructor(private readonly driveRepository: DriveRepository) {}
 
-  async findDrive(dto: IDriveFoldersQuery) {
+  async findDrive(dto: Pick<IDrive, 'userId'>) {
     return this.driveRepository.findBy(dto);
   }
 

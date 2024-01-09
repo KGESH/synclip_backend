@@ -25,7 +25,7 @@ export class DriveRepository {
     };
   }
 
-  async findBy({ userId }: IDriveFoldersQuery): Promise<IDrive | null> {
+  async findBy({ userId }: Pick<IDrive, 'userId'>): Promise<IDrive | null> {
     try {
       const drive = await this.prisma.drive.findUniqueOrThrow({
         where: {

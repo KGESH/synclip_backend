@@ -2,7 +2,6 @@ import { Controller, Logger } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
 import {
-  IUser,
   IUserCreate,
   IUserQuery,
   IUserResponse,
@@ -24,23 +23,11 @@ export class UserController {
     }
 
     try {
-      if (id) {
-        const user = await this.userService.findUserById({ id });
+      const user = await this.userService.findUser(query);
 
-        if (!user) return { status: 'not_found', message: 'user not found' };
+      if (!user) return { status: 'not_found', message: 'user not found' };
 
-        return { status: 'success', data: user };
-      }
-
-      if (email) {
-        const user = await this.userService.findUserByEmail({ email });
-
-        if (!user) return { status: 'not_found', message: 'user not found' };
-
-        return { status: 'success', data: user };
-      }
-
-      return { status: 'error', message: 'Unknown error' };
+      return { status: 'success', data: user };
     } catch (e) {
       this.logger.error(e);
       return { status: 'error', message: 'Unknown error' };
@@ -55,7 +42,7 @@ export class UserController {
   @TypedRoute.Patch('/')
   async updateUser(@TypedBody() dto: IUserUpdate): Promise<IUserResponse> {
     try {
-      const found = await this.userService.findUserById({ id: dto.id });
+      const found = await this.userService.findUser({ id: dto.id });
 
       if (!found) return { status: 'not_found', message: 'user not found' };
 

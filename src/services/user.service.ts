@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IUser, IUserCreate, IUserResponse } from '../dtos/user.dto';
+import {
+  IUser,
+  IUserCreate,
+  IUserQuery,
+  IUserResponse,
+} from '../dtos/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { Prisma } from '@prisma/client';
 
@@ -9,14 +14,9 @@ export class UserService {
 
   constructor(private readonly userRepository: UserRepository) {}
 
-  async findUserById({ id }: Pick<IUser, 'id'>): Promise<IUser | null> {
-    return await this.userRepository.findBy({ id });
-  }
-
-  async findUserByEmail({
-    email,
-  }: Pick<IUser, 'email'>): Promise<IUser | null> {
-    return this.userRepository.findBy({ email });
+  async findUser({ id, email }: IUserQuery): Promise<IUser | null> {
+    if (id) return await this.userRepository.findBy({ id });
+    return await this.userRepository.findBy({ email });
   }
 
   async createUser(dto: IUserCreate): Promise<IUserResponse> {
