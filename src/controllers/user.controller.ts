@@ -27,7 +27,12 @@ export class UserController {
 
   @TypedRoute.Post('/')
   async createUser(@TypedBody() dto: IUserCreate): Promise<IResponse<IUser>> {
-    return await this.userService.createUser(dto);
+    const user = await this.userService.createUser(dto);
+
+    return {
+      status: 'success',
+      data: user,
+    };
   }
 
   @TypedRoute.Patch('/')

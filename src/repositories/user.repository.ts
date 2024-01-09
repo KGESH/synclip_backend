@@ -3,8 +3,12 @@ import { PrismaService } from '../services/prisma.service';
 import { IUser, IUserCreate } from '../dtos/user.dto';
 import { Prisma, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
+import {
+  PRISMA_ENTITY_NOT_FOUND,
+  PRISMA_UNIQUE_CONSTRAINT_FAILED,
+} from '../constants/prisma.constant';
 import { UnknownException } from '../exceptions/unknown.exception';
+import { EntityConflictException } from '../exceptions/entityConflict.exception';
 
 @Injectable()
 export class UserRepository {
@@ -48,23 +52,39 @@ export class UserRepository {
   }
 
   async create({ email, nickname }: IUserCreate) {
-    const user = await this.prisma.user.create({
-      data: {
-        id: uuidv4(),
-        email,
-        nickname,
-      },
-    });
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          id: uuidv4(),
+          email,
+          nickname,
+        },
+      });
 
-    return this._transform(user);
+      return this._transform(user);
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
+          throw new EntityConflictException({
+            message: 'Email already exists',
+          });
+        }
+      }
+
+      throw new UnknownException(e);
+    }
   }
 
   async update({ id, ...data }: Partial<IUser>) {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data,
-    });
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data,
+      });
 
-    return this._transform(user);
+      return this._transform(user);
+    } catch (e) {
+      throw new UnknownException(e);
+    }
   }
 }
