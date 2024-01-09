@@ -45,14 +45,10 @@ export class DeviceRepository {
       return this._transform(device);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        // Not found
-        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
-          return null;
-        }
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) return null;
       }
 
-      this.logger.error(e);
-      throw new Error(e);
+      throw new UnknownException(e);
     }
   }
 
