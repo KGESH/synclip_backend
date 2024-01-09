@@ -4,6 +4,7 @@ import { NotifyModule } from './modules/notify.module';
 import { DeviceModule } from './modules/device.module';
 import { ConnectionModule } from './modules/connection.module';
 import { DriveModule } from './modules/drive.module';
+import { ShortcutsModule } from './modules/shortcuts.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DriveModule } from './modules/drive.module';
     DriveModule,
     ConnectionModule,
     NotifyModule,
+    ShortcutsModule,
   ],
 })
 export class AppModule {}
