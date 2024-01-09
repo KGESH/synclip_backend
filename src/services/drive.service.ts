@@ -1,12 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DriveRepository } from '../repositories/drive.repository';
-import {
-  IDrive,
-  IDriveCreate,
-  IDriveResponse,
-  IDriveUpdate,
-} from '../dtos/drive.dto';
+import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
+import { IResponse } from '../dtos/response.dto';
 
 @Injectable()
 export class DriveService {
@@ -18,7 +14,7 @@ export class DriveService {
     return this.driveRepository.findBy(dto);
   }
 
-  async createDrive(dto: IDriveCreate): Promise<IDriveResponse> {
+  async createDrive(dto: IDriveCreate): Promise<IResponse<IDrive>> {
     try {
       const drive = await this.driveRepository.create(dto);
       return {

@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DeviceRepository } from '../repositories/device.repository';
 import {
+  IDevice,
   IDeviceCreate,
   IDeviceQuery,
-  IDeviceResponse,
   IDevicesQuery,
   IDeviceUpdate,
 } from '../dtos/device.dto';
 import { Prisma } from '@prisma/client';
+import { IResponse } from '../dtos/response.dto';
 
 @Injectable()
 export class DeviceService {
@@ -27,7 +28,7 @@ export class DeviceService {
     return this.deviceRepository.create(dto);
   }
 
-  async registerDevice(dto: IDeviceCreate): Promise<IDeviceResponse> {
+  async registerDevice(dto: IDeviceCreate): Promise<IResponse<IDevice>> {
     // Todo: Pricing plan check
     // Todo: Maximum device count check
     try {

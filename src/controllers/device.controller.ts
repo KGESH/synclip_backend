@@ -4,13 +4,13 @@ import { UserService } from '../services/user.service';
 import { ConnectionService } from '../services/connection.service';
 import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
 import {
+  IDevice,
   IDeviceCreate,
   IDeviceQuery,
-  IDeviceResponse,
   IDevicesQuery,
-  IDevicesResponse,
   IDeviceUpdate,
 } from '../dtos/device.dto';
+import { IResponse } from '../dtos/response.dto';
 
 @Controller('devices')
 export class DeviceController {
@@ -23,7 +23,9 @@ export class DeviceController {
   ) {}
 
   @TypedRoute.Get('/')
-  async getDevice(@TypedQuery() query: IDeviceQuery): Promise<IDeviceResponse> {
+  async getDevice(
+    @TypedQuery() query: IDeviceQuery,
+  ): Promise<IResponse<IDevice>> {
     this.logger.log(`[getDevice] Query: `, query);
 
     if (!query.id && !query.mac) {
@@ -58,7 +60,7 @@ export class DeviceController {
   @TypedRoute.Get('/all')
   async getDevices(
     @TypedQuery() query: IDevicesQuery,
-  ): Promise<IDevicesResponse> {
+  ): Promise<IResponse<IDevice[]>> {
     this.logger.log(`[getDevices] Query: `, query);
 
     if (!query.userId && !query.email) {

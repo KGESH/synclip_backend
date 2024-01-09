@@ -11,14 +11,15 @@ datasource db {
 }
 
 model User {
-  id        String    @id @db.Uuid /// @format uuid
-  email     String    @unique
+  id        String     @id @db.Uuid /// @format uuid
+  email     String     @unique
   nickname  String
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
   devices   Device[]
   drive     Drive?
+  shortcuts Shortcuts?
 }
 
 model Drive {
@@ -49,4 +50,14 @@ model Device {
 enum DeviceType {
   PC     @map("pc")
   MOBILE @map("mobile")
+}
+
+model Shortcuts {
+  id        String    @id @db.Uuid /// @format uuid
+  userId    String    @unique @map("user_id") @db.Uuid /// @format uuid
+  shortcuts Json
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

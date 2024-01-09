@@ -1,5 +1,4 @@
 import { tags } from 'typia';
-
 import { DeviceType } from '@prisma/client';
 import { IUser } from './user.dto';
 
@@ -21,22 +20,3 @@ export type IDeviceQuery = Partial<Pick<IDevice, 'id' | 'mac'>>;
 export type IDevicesQuery = Partial<
   Pick<IDevice, 'userId'> & Pick<IUser, 'email'>
 >;
-
-export type IDeviceResponseSuccess = {
-  status: 'success';
-  data: IDevice;
-};
-
-export type IDevicesResponseSuccess = {
-  status: 'success';
-  data: IDevice[];
-};
-
-export type IDeviceResponseFail = {
-  status: 'error' | 'not_found';
-  message: string;
-};
-
-export type IDeviceResponse = IDeviceResponseSuccess | IDeviceResponseFail;
-
-export type IDevicesResponse = IDevicesResponseSuccess | IDeviceResponseFail;

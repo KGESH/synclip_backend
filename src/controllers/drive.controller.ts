@@ -3,11 +3,12 @@ import { DriveService } from '../services/drive.service';
 import { UserService } from '../services/user.service';
 import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
 import {
+  IDrive,
   IDriveCreate,
   IDriveFoldersQuery,
-  IDriveResponse,
   IDriveUpdate,
 } from '../dtos/drive.dto';
+import { IResponse } from '../dtos/response.dto';
 
 @Controller('drive')
 export class DriveController {
@@ -21,7 +22,7 @@ export class DriveController {
   @TypedRoute.Get('/')
   async getDrive(
     @TypedQuery() query: IDriveFoldersQuery,
-  ): Promise<IDriveResponse> {
+  ): Promise<IResponse<IDrive>> {
     this.logger.debug(`[getDrive] Query: `, query);
 
     if (!query.userId && !query.email) {
@@ -68,7 +69,9 @@ export class DriveController {
   }
 
   @Post('/')
-  async registerDrive(@TypedBody() dto: IDriveCreate): Promise<IDriveResponse> {
+  async registerDrive(
+    @TypedBody() dto: IDriveCreate,
+  ): Promise<IResponse<IDrive>> {
     this.logger.log(`[registerDrive] DTO: `, dto);
 
     const user = this.userService.findUser({ id: dto.userId });

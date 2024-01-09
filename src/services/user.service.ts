@@ -1,12 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  IUser,
-  IUserCreate,
-  IUserQuery,
-  IUserResponse,
-} from '../dtos/user.dto';
+import { IUser, IUserCreate, IUserQuery } from '../dtos/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { Prisma } from '@prisma/client';
+import { IResponse } from '../dtos/response.dto';
 
 @Injectable()
 export class UserService {
@@ -19,7 +15,7 @@ export class UserService {
     return await this.userRepository.findBy({ email });
   }
 
-  async createUser(dto: IUserCreate): Promise<IUserResponse> {
+  async createUser(dto: IUserCreate): Promise<IResponse<IUser>> {
     try {
       const user = await this.userRepository.create(dto);
 

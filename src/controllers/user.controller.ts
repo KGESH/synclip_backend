@@ -1,12 +1,8 @@
 import { Controller, Logger } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
-import {
-  IUserCreate,
-  IUserQuery,
-  IUserResponse,
-  IUserUpdate,
-} from '../dtos/user.dto';
+import { IUser, IUserCreate, IUserQuery, IUserUpdate } from '../dtos/user.dto';
+import { IResponse } from '../dtos/response.dto';
 
 @Controller('users')
 export class UserController {
@@ -15,7 +11,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @TypedRoute.Get('/')
-  async getUser(@TypedQuery() query: IUserQuery): Promise<IUserResponse> {
+  async getUser(@TypedQuery() query: IUserQuery): Promise<IResponse<IUser>> {
     const { id, email } = query;
 
     if (!email && !id) {
@@ -35,12 +31,12 @@ export class UserController {
   }
 
   @TypedRoute.Post('/')
-  async createUser(@TypedBody() dto: IUserCreate): Promise<IUserResponse> {
+  async createUser(@TypedBody() dto: IUserCreate): Promise<IResponse<IUser>> {
     return await this.userService.createUser(dto);
   }
 
   @TypedRoute.Patch('/')
-  async updateUser(@TypedBody() dto: IUserUpdate): Promise<IUserResponse> {
+  async updateUser(@TypedBody() dto: IUserUpdate): Promise<IResponse<IUser>> {
     try {
       const found = await this.userService.findUser({ id: dto.id });
 

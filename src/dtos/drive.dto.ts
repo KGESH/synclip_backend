@@ -1,21 +1,6 @@
 import { tags } from 'typia';
 import { IUser } from './user.dto';
 
-export type IFile = {
-  id: string;
-  name: string;
-};
-
-export type ITextUpload = {
-  type: 'text';
-  content: IFile;
-};
-
-export type IBinaryFIleUpload = {
-  type: 'file';
-  contents: IFile | IFile[];
-};
-
 export type IDrive = {
   id: string & tags.Format<'uuid'>;
   userId: string & tags.Format<'uuid'>;
@@ -32,14 +17,17 @@ export type IDriveFoldersQuery = Partial<
   Pick<IUser, 'email'> & Pick<IDrive, 'userId'>
 >;
 
-export type IDriveResponseSuccess = {
-  status: 'success';
-  data: IDrive;
+export type IFile = {
+  id: string;
+  name: string;
 };
 
-export type IDriveResponseFail = {
-  status: 'error' | 'not_found';
-  message: string;
+export type ITextUpload = {
+  type: 'text';
+  content: IFile;
 };
 
-export type IDriveResponse = IDriveResponseSuccess | IDriveResponseFail;
+export type IBinaryFIleUpload = {
+  type: 'file';
+  contents: IFile | IFile[];
+};
