@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { DriveRepository } from '../repositories/drive.repository';
 import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
 import { IResponse } from '../dtos/response.dto';
+import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
 
 @Injectable()
 export class DriveService {
@@ -24,7 +25,7 @@ export class DriveService {
     } catch (e) {
       // Unique constraint error
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
           return {
             status: 'error',
             message: `Synclip folders already exists. Check your drive ids.`,

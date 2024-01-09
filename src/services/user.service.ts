@@ -3,6 +3,7 @@ import { IUser, IUserCreate, IUserQuery } from '../dtos/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { Prisma } from '@prisma/client';
 import { IResponse } from '../dtos/response.dto';
+import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,7 @@ export class UserService {
     } catch (e) {
       this.logger.error(e);
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
           return {
             status: 'error',
             message: 'Email already exists',

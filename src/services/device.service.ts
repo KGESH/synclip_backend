@@ -9,6 +9,7 @@ import {
 } from '../dtos/device.dto';
 import { Prisma } from '@prisma/client';
 import { IResponse } from '../dtos/response.dto';
+import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
 
 @Injectable()
 export class DeviceService {
@@ -40,7 +41,7 @@ export class DeviceService {
     } catch (e) {
       // Unique constraint error
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
           return {
             status: 'error',
             message: `Device already exists. Check your MAC address.`,

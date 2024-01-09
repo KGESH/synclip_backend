@@ -3,6 +3,7 @@ import { PrismaService } from '../services/prisma.service';
 import { IUser, IUserCreate } from '../dtos/user.dto';
 import { Prisma, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
 
 @Injectable()
 export class UserRepository {
@@ -34,7 +35,7 @@ export class UserRepository {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         // Not found
-        if (e.code === 'P2025') {
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
           return null;
         }
       }

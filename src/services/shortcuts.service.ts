@@ -7,6 +7,7 @@ import {
 } from '../dtos/shortcuts.dto';
 import { Prisma } from '@prisma/client';
 import { IResponse } from '../dtos/response.dto';
+import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
 
 @Injectable()
 export class ShortcutsService {
@@ -24,7 +25,7 @@ export class ShortcutsService {
     } catch (e) {
       // Unique constraint error
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
+        if (e.code === PRISMA_UNIQUE_CONSTRAINT_FAILED) {
           return {
             status: 'error',
             message: `User already created default shortcuts.`,

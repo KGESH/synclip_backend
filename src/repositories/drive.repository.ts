@@ -8,6 +8,7 @@ import {
   IDriveFoldersQuery,
   IDriveUpdate,
 } from '../dtos/drive.dto';
+import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
 
 @Injectable()
 export class DriveRepository {
@@ -37,7 +38,7 @@ export class DriveRepository {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         // Not found
-        if (e.code === 'P2025') {
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
           return null;
         }
       }

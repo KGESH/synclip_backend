@@ -9,6 +9,7 @@ import {
   IDevicesQuery,
   IDeviceUpdate,
 } from '../dtos/device.dto';
+import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
 
 @Injectable()
 export class DeviceRepository {
@@ -40,7 +41,7 @@ export class DeviceRepository {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         // Not found
-        if (e.code === 'P2025') {
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
           return null;
         }
       }

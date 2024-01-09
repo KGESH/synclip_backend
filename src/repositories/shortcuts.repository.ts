@@ -9,6 +9,7 @@ import {
   IShortcutsUpdate,
 } from '../dtos/shortcuts.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { PRISMA_ENTITY_NOT_FOUND } from '../constants/prisma.constant';
 
 @Injectable()
 export class ShortcutsRepository {
@@ -47,7 +48,7 @@ export class ShortcutsRepository {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         // Not found
-        if (e.code === 'P2025') {
+        if (e.code === PRISMA_ENTITY_NOT_FOUND) {
           return null;
         }
       }
