@@ -15,6 +15,8 @@ export class UserController {
   async getUser(@TypedQuery() query: IUserQuery): Promise<IResponse<IUser>> {
     const { id, email } = query;
 
+    this.logger.log(`[${this.getUser.name}]`, query);
+
     if (!email && !id)
       throw new EntityNotfoundException({ message: 'id or email is required' });
 
@@ -22,12 +24,17 @@ export class UserController {
 
     if (!user) throw new EntityNotfoundException({ message: 'user not found' });
 
+    this.logger.log(`[${this.getUser.name}]`, user);
+
     return { status: 'success', data: user };
   }
 
   @TypedRoute.Post('/')
   async createUser(@TypedBody() dto: IUserCreate): Promise<IResponse<IUser>> {
+    this.logger.log(`[${this.createUser.name}]`, dto);
     const user = await this.userService.createUser(dto);
+
+    this.logger.log(`[${this.createUser.name}]`, user);
 
     return {
       status: 'success',

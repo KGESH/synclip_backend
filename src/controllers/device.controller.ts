@@ -76,11 +76,15 @@ export class DeviceController {
   }
 
   @Patch('/fcm')
-  updateFcmToken(
+  async updateFcmToken(
     @TypedBody()
     dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>,
-  ) {
+  ): Promise<IResponse<IDevice>> {
     this.logger.log(`[${this.updateFcmToken.name}]`, dto);
-    return this.deviceService.updateDeviceFcmToken(dto);
+    const updated = await this.deviceService.updateDeviceFcmToken(dto);
+    return {
+      status: 'success',
+      data: updated,
+    };
   }
 }

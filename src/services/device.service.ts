@@ -47,11 +47,13 @@ export class DeviceService {
     return await this._createDevice(dto);
   }
 
-  private async _updateDevice(dto: IDeviceUpdate) {
+  private async _updateDevice(dto: IDeviceUpdate): Promise<IDevice> {
     return this.deviceRepository.update(dto);
   }
 
-  async updateDeviceFcmToken(dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>) {
+  async updateDeviceFcmToken(
+    dto: Pick<IDeviceUpdate, 'id' | 'fcmToken'>,
+  ): Promise<IDevice> {
     return this._updateDevice(dto);
   }
 }

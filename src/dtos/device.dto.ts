@@ -5,7 +5,8 @@ import { IUser } from './user.dto';
 export type IDevice = {
   id: string & tags.Format<'uuid'>;
   userId: string & tags.Format<'uuid'>;
-  mac: string & tags.Pattern<'^([0-9a-f]{2}[:-]){5}([0-9a-f]{2})$'>;
+  mac: string;
+  // mac: string & tags.Pattern<'^([0-9a-f]{2}[:-]){5}([0-9a-f]{2})$'>;
   alias: string & tags.MinLength<1> & tags.MaxLength<50>;
   deviceType: DeviceType;
   fcmToken: string;

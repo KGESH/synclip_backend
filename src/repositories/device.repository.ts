@@ -84,7 +84,7 @@ export class DeviceRepository extends BaseRepository<Device, IDevice> {
     }
   }
 
-  async update({ id, ...data }: IDeviceUpdate) {
+  async update({ id, ...data }: IDeviceUpdate): Promise<IDevice> {
     try {
       const device = await this.prisma.device.update({
         where: { id },
