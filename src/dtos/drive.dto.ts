@@ -25,7 +25,7 @@ export type ITextUpload = {
   content: IFile;
 };
 
-export type IBinaryFIleUpload = {
+export type IBinaryFileUpload = {
   type: 'file';
   contents: IFile | IFile[];
 };
