@@ -8,11 +8,6 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalFilters(new SynclipExceptionFilter());
 
-  const configs = app.get(ConfigService);
-
-  const firebase = configs.get('private_key_id');
-  console.log(`key: `, firebase);
-
   await app.listen(3000);
 }
 bootstrap();
