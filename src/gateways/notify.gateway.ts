@@ -16,6 +16,8 @@ import { Logger } from '@nestjs/common';
 import { ISocketConnection, ISocketMessage } from '../dtos/socket.dto';
 import { DeviceType } from '@prisma/client';
 import { IDevice } from '../dtos/device.dto';
+import { FcmService } from '../services/fcm.service';
+import { IBinaryFileUpload, ITextUpload } from '../dtos/drive.dto';
 
 @WebSocketGateway(3030, { cors: { origin: '*' } })
 export class NotifyGateway
@@ -27,6 +29,7 @@ export class NotifyGateway
   constructor(
     private readonly connectionService: ConnectionService,
     private readonly deviceService: DeviceService,
+    private readonly fcmService: FcmService,
   ) {}
 
   afterInit(server: Server) {
@@ -82,11 +85,19 @@ export class NotifyGateway
   }
 
   @SubscribeMessage('copy')
-  copyHandler(@MessageBody() data: unknown, @ConnectedSocket() client: Socket) {
+  async copyHandler(
+    @MessageBody() data: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
     this.logger.debug(
       `==========Websocket copy message received==========`,
       data,
     );
+
+    const isValidated = typia.is<ITextUpload | IBinaryFileUpload>(data);
+
+    if (!isValidated) return;
+
     this.logger.debug(this.connectionService.getConnections());
 
     const connections = this.connectionService.getConnections();
@@ -100,26 +111,66 @@ export class NotifyGateway
       return;
     }
 
-    const devicesWithoutCopiedDevice = connections
-      .filter((connection) => connection.userId === copiedDevice.userId)
-      .filter((connection) => connection.socketId !== copiedDevice.socketId);
+    const devices = await this.deviceService.findDevices({
+      userId: copiedDevice.userId,
+    });
 
-    const connectionIds = devicesWithoutCopiedDevice.map(
-      (device) => device.socketId,
+    // How to get desktop devices and mobile devices more fancy?
+    const devicesWithoutCopiedDevice = devices.filter(
+      (device) => device.id !== copiedDevice.deviceId,
     );
 
-    this.emitToDevices({
-      connectionIds,
+    const [desktops, mobiles] = this._splitDevicesByType(
+      devicesWithoutCopiedDevice,
+    );
+
+    // Todo: validate data
+    await this.fcmService.sendNotification({
+      mobiles,
+      type: 'silent',
+      payload: data as ITextUpload | IBinaryFileUpload,
+    });
+
+    const desktopConnectionIds = this._getDesktopConnectionIds(
+      connections,
+      desktops,
+    );
+
+    this.emitToDesktops({
+      connectionIds: desktopConnectionIds,
       event: 'paste',
       data,
     });
   }
 
-  emitToDevices<T>({ connectionIds, event, data }: ISocketMessage<T>) {
+  emitToDesktops<T>({ connectionIds, event, data }: ISocketMessage<T>) {
     if (connectionIds.length === 0) {
       this.logger.log(`No other connection ids`);
       return;
     }
     this.server.to(connectionIds).emit(event, data);
+  }
+
+  private _splitDevicesByType(devices: IDevice[]) {
+    return devices.reduce(
+      ([desktops, mobiles], device) => {
+        device.deviceType === DeviceType.PC
+          ? desktops.push(device)
+          : mobiles.push(device);
+        return [desktops, mobiles];
+      },
+      [[] as IDevice[], [] as IDevice[]],
+    );
+  }
+
+  private _getDesktopConnectionIds(
+    connections: ISocketConnection[],
+    desktopDevices: IDevice[],
+  ) {
+    return connections
+      .filter((connection) =>
+        desktopDevices.some((desktop) => desktop.id === connection.deviceId),
+      )
+      .map((connection) => connection.socketId);
   }
 }

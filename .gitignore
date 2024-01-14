@@ -38,4 +38,4 @@ lerna-debug.log*
 .env*
 
 # fcm credentials
-synclip_firebase_admin_key.json
+firebase_cred.json
