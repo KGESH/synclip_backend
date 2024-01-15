@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
-import { IUser, IUserCreate } from '../dtos/user.dto';
+import { IUser, IUserCreate, IUserQuery } from '../dtos/user.dto';
 import { User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from './base.repository';
@@ -21,10 +21,7 @@ export class UserRepository extends BaseRepository<User, IUser> {
     };
   }
 
-  async findBy({
-    id,
-    email,
-  }: Partial<Pick<IUser, 'id' | 'email'>>): Promise<IUser | null> {
+  async findBy({ id, email }: IUserQuery): Promise<IUser | null> {
     try {
       const user = await this.prisma.user.findUniqueOrThrow({
         where: {
