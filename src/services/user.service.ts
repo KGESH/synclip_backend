@@ -3,6 +3,7 @@ import { IUser, IUserCreate, IUserQuery } from '../dtos/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { RequiredArgsException } from '../exceptions/requiredArgs.exception';
 import { EntityConflictException } from '../exceptions/entityConflict.exception';
+import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
 
 @Injectable()
 export class UserService {
@@ -31,7 +32,12 @@ export class UserService {
     return await this.userRepository.create(dto);
   }
 
-  async updateUser(dto: Partial<IUser>) {
+  async updateUser(dto: Partial<IUser>): Promise<IUser> {
+    const found = await this.findUser({ id: dto.id });
+
+    if (!found)
+      throw new EntityNotfoundException({ message: 'user not found' });
+
     return await this.userRepository.update(dto);
   }
 }

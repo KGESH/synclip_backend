@@ -4,6 +4,7 @@ import { TypedBody, TypedQuery, TypedRoute } from '@nestia/core';
 import { IUser, IUserCreate, IUserQuery, IUserUpdate } from '../dtos/user.dto';
 import { IResponse } from '../dtos/response.dto';
 import { EntityNotfoundException } from '../exceptions/entityNotfound.exception';
+import { RequiredArgsException } from '../exceptions/requiredArgs.exception';
 
 @Controller('users')
 export class UserController {
@@ -18,7 +19,7 @@ export class UserController {
     this.logger.log(`[${this.getUser.name}]`, query);
 
     if (!email && !id)
-      throw new EntityNotfoundException({ message: 'id or email is required' });
+      throw new RequiredArgsException({ message: 'id or email is required' });
 
     const user = await this.userService.findUser(query);
 
@@ -44,11 +45,6 @@ export class UserController {
 
   @TypedRoute.Patch('/')
   async updateUser(@TypedBody() dto: IUserUpdate): Promise<IResponse<IUser>> {
-    const found = await this.userService.findUser({ id: dto.id });
-
-    if (!found)
-      throw new EntityNotfoundException({ message: 'user not found' });
-
     const updated = await this.userService.updateUser(dto);
 
     return {
