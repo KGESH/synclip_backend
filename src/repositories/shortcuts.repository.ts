@@ -28,7 +28,7 @@ export class ShortcutsRepository extends BaseRepository<Shortcuts, IShortcuts> {
     };
   }
 
-  async create(dto: IShortcutsCreate) {
+  async create(dto: IShortcutsCreate): Promise<IShortcuts> {
     try {
       const shortcuts = await this.prismaService.shortcuts.create({
         data: {
@@ -43,7 +43,7 @@ export class ShortcutsRepository extends BaseRepository<Shortcuts, IShortcuts> {
     }
   }
 
-  async findBy({ userId }: IShortQuery) {
+  async findBy({ userId }: IShortQuery): Promise<IShortcuts | null> {
     try {
       const shortcuts = await this.prismaService.shortcuts.findUniqueOrThrow({
         where: {
@@ -57,7 +57,7 @@ export class ShortcutsRepository extends BaseRepository<Shortcuts, IShortcuts> {
     }
   }
 
-  async update({ userId, shortcuts }: IShortcutsUpdate) {
+  async update({ userId, shortcuts }: IShortcutsUpdate): Promise<IShortcuts> {
     try {
       const updated = await this.prismaService.shortcuts.update({
         where: {

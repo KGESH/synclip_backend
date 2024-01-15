@@ -36,7 +36,7 @@ export class UserRepository extends BaseRepository<User, IUser> {
     }
   }
 
-  async findMany() {
+  async findMany(): Promise<IUser[]> {
     try {
       const users = await this.prisma.user.findMany();
       return users.map((user) => this._transform(user));
@@ -61,7 +61,7 @@ export class UserRepository extends BaseRepository<User, IUser> {
     }
   }
 
-  async update({ id, ...data }: Partial<IUser>) {
+  async update({ id, ...data }: Partial<IUser>): Promise<IUser> {
     try {
       const user = await this.prisma.user.update({
         where: { id },

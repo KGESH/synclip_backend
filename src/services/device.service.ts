@@ -15,7 +15,7 @@ export class DeviceService {
 
   constructor(private readonly deviceRepository: DeviceRepository) {}
 
-  async findDevice(query: IDeviceQuery) {
+  async findDevice(query: IDeviceQuery): Promise<IDevice | null> {
     if (!query.id && !query.mac)
       throw new RequiredArgsException({ message: 'id or mac is required' });
 

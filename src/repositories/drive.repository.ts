@@ -37,7 +37,7 @@ export class DriveRepository extends BaseRepository<Drive, IDrive> {
     }
   }
 
-  async create(dto: IDriveCreate) {
+  async create(dto: IDriveCreate): Promise<IDrive> {
     try {
       const drive = await this.prisma.drive.create({
         data: {
@@ -52,7 +52,7 @@ export class DriveRepository extends BaseRepository<Drive, IDrive> {
     }
   }
 
-  async update({ userId, ...data }: IDriveUpdate) {
+  async update({ userId, ...data }: IDriveUpdate): Promise<IDrive> {
     try {
       const drive = await this.prisma.drive.update({
         where: { userId },

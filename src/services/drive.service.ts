@@ -11,7 +11,7 @@ export class DriveService {
 
   constructor(private readonly driveRepository: DriveRepository) {}
 
-  async findDrive(dto: Pick<IDrive, 'userId'>) {
+  async findDrive(dto: Pick<IDrive, 'userId'>): Promise<IDrive | null> {
     return this.driveRepository.findBy(dto);
   }
 
@@ -19,7 +19,7 @@ export class DriveService {
     return await this.driveRepository.create(dto);
   }
 
-  async updateFolderId(dto: IDriveUpdate) {
+  async updateFolderId(dto: IDriveUpdate): Promise<IDrive> {
     return await this.driveRepository.update(dto);
   }
 }
