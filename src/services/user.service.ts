@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IUser, IUserCreate, IUserQuery } from '../dtos/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { RequiredArgsException } from '../exceptions/requiredArgs.exception';
+import { EntityConflictException } from '../exceptions/entityConflict.exception';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,11 @@ export class UserService {
   }
 
   async createUser(dto: IUserCreate): Promise<IUser> {
+    const found = await this.userRepository.findBy({ email: dto.email });
+
+    if (found)
+      throw new EntityConflictException({ message: 'user already exists' });
+
     return await this.userRepository.create(dto);
   }
 
