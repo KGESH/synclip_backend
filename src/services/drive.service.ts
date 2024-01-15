@@ -1,9 +1,6 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable, Logger } from '@nestjs/common';
 import { DriveRepository } from '../repositories/drive.repository';
 import { IDrive, IDriveCreate, IDriveUpdate } from '../dtos/drive.dto';
-import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
-import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DriveService {
