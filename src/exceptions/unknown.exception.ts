@@ -6,7 +6,7 @@ export class UnknownException<T> extends SynclipException<T> {
   private readonly logger = new Logger(UnknownException.name);
 
   constructor(
-    e: Error,
+    e: Error | unknown,
     { message, data }: ISynclipExceptionArgs<T> = {
       message: 'Unknown error',
     },

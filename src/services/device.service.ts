@@ -7,12 +7,7 @@ import {
   IDevicesQuery,
   IDeviceUpdate,
 } from '../dtos/device.dto';
-import { Prisma } from '@prisma/client';
-import { IResponse } from '../dtos/response.dto';
-import { PRISMA_UNIQUE_CONSTRAINT_FAILED } from '../constants/prisma.constant';
 import { RequiredArgsException } from '../exceptions/requiredArgs.exception';
-import { EntityConflictException } from '../exceptions/entityConflict.exception';
-import { UnknownException } from '../exceptions/unknown.exception';
 
 @Injectable()
 export class DeviceService {
@@ -27,7 +22,7 @@ export class DeviceService {
     return this.deviceRepository.findBy(query);
   }
 
-  async findDevices(query: IDevicesQuery) {
+  async findDevices(query: IDevicesQuery): Promise<IDevice[]> {
     if (!query.userId && !query.email) {
       throw new RequiredArgsException({
         message: 'userId or email is required',

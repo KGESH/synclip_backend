@@ -58,7 +58,9 @@ export class DeviceController {
   }
 
   @Post('/')
-  async registerDevice(@TypedBody() dto: IDeviceCreate) {
+  async registerDevice(
+    @TypedBody() dto: IDeviceCreate,
+  ): Promise<IResponse<IDevice>> {
     this.logger.log(`[${this.registerDevice.name}]`, dto);
 
     const user = this.userService.findUser({ id: dto.userId });

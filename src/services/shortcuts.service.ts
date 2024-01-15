@@ -18,11 +18,11 @@ export class ShortcutsService {
     return await this.shortcutsRepository.create(dto);
   }
 
-  async findShortcuts(query: IShortQuery) {
+  async findShortcuts(query: IShortQuery): Promise<IShortcuts | null> {
     return this.shortcutsRepository.findBy(query);
   }
 
-  async updateShortcuts(dto: IShortcutsUpdate) {
+  async updateShortcuts(dto: IShortcutsUpdate): Promise<IShortcuts> {
     try {
       return this.shortcutsRepository.update(dto);
     } catch (e) {
