@@ -23,15 +23,43 @@ model User {
 }
 
 model Drive {
-  id           String    @id @db.Uuid /// @format uuid
-  userId       String    @unique @map("user_id") @db.Uuid /// @format uuid
-  baseFolderId String    @map("base_folder_id")
-  textFolderId String    @map("text_folder_id")
-  fileFolderId String    @map("file_folder_id")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String      @id @db.Uuid /// @format uuid
+  userId       String      @unique @map("user_id") @db.Uuid /// @format uuid
+  baseFolderId String      @map("base_folder_id")
+  textFolderId String      @map("text_folder_id")
+  fileFolderId String      @map("file_folder_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  driveFile    DriveFile[]
+}
+
+model DriveFile {
+  id          String       @id @db.Uuid /// @format uuid
+  driveId     String       @map("drive_id") @db.Uuid /// @format uuid
+  driveFileId String       @map("drive_file_id")
+  fileType    String       @map("file_type")
+  folderId    String       @map("folder_id")
+  stored      Boolean      @default(false)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  drive       Drive        @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  storedFiles StoredFile[]
+
+  @@index([createdAt])
+}
+
+model StoredFile {
+  id        String    @id @db.Uuid /// @format uuid
+  fileId    String    @map("file_id") @db.Uuid /// @format uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  file      DriveFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
 }
 
 model Device {
