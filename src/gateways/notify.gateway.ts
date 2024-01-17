@@ -24,7 +24,7 @@ export class NotifyGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(NotifyGateway.name);
-  @WebSocketServer() private server: Server;
+  @WebSocketServer() private server!: Server;
 
   constructor(
     private readonly connectionService: ConnectionService,
@@ -37,7 +37,7 @@ export class NotifyGateway
   }
 
   async handleConnection(client: Socket) {
-    this.logger.log(`==========Websocket client connected==========`);
+    this.logger.debug(`==========Websocket client connected==========`);
 
     const url = client.request.url;
     const params = new URLSearchParams(url?.split('?')[1]);
@@ -78,9 +78,12 @@ export class NotifyGateway
     this.connectionService.removeConnection(client.id);
   }
 
-  @SubscribeMessage('ping')
-  handlePing(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
-    this.logger.debug('[Websocket ping]', data);
+  @SubscribeMessage('health')
+  handleHealthCheck(
+    @MessageBody() data: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.debug('[Websocket health check]', data);
     client.emit('pong', 'pong');
   }
 
@@ -148,6 +151,8 @@ export class NotifyGateway
       this.logger.log(`No other connection ids`);
       return;
     }
+
+    this.logger.verbose(`Emit to desktops`, connectionIds, data);
     this.server.to(connectionIds).emit(event, data);
   }
 
