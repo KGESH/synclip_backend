@@ -3,12 +3,10 @@ import { IUser, IUserCreate, IUserUpdate } from '../../../src/dtos/user.dto';
 import { User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createRandomUserId = uuidv4;
-
-export const createRandomUserDto = typia.createRandom<IUser>();
-
-export const createRandomCreateUserDto = typia.createRandom<IUserCreate>();
-
-export const createRandomUpdateUserDto = typia.createRandom<IUserUpdate>();
-
-export const createRandomUserEntity = typia.createRandom<User>();
+export class MockUserHelper {
+  static randomId = uuidv4;
+  static dto = typia.createRandom<IUser>();
+  static createDto = typia.createRandom<IUserCreate>();
+  static updateDto = typia.createRandom<IUserUpdate>();
+  static entity = typia.createRandom<User>();
+}

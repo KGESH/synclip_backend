@@ -8,12 +8,7 @@ import {
   IUserQuery,
   IUserUpdate,
 } from '../../../src/dtos/user.dto';
-import {
-  createRandomCreateUserDto,
-  createRandomUpdateUserDto,
-  createRandomUserDto,
-  createRandomUserId,
-} from '../../helper/random/user.helper';
+import { MockUserHelper } from '../../helper/random/user.helper';
 import { EntityConflictException } from '../../../src/exceptions/entityConflict.exception';
 import { RequiredArgsException } from '../../../src/exceptions/requiredArgs.exception';
 import { EntityNotfoundException } from '../../../src/exceptions/entityNotfound.exception';
@@ -30,11 +25,8 @@ describe('[Spec] User Service', () => {
       .useValue(mockDeep<UserRepository>())
       .compile();
 
-    userService = moduleRef.get<UserService>(UserService);
-    mockUserRepository = moduleRef.get<
-      UserRepository,
-      DeepMockProxy<UserRepository>
-    >(UserRepository);
+    userService = moduleRef.get(UserService);
+    mockUserRepository = moduleRef.get(UserRepository);
   });
 
   afterEach(() => {
@@ -46,8 +38,11 @@ describe('[Spec] User Service', () => {
 
   describe('[createUser]', () => {
     it(`[success] should be create user`, async () => {
-      const createDto: IUserCreate = createRandomCreateUserDto();
-      const mockCreatedUser: IUser = { id: createRandomUserId(), ...createDto };
+      const createDto: IUserCreate = MockUserHelper.createDto();
+      const mockCreatedUser: IUser = {
+        id: MockUserHelper.randomId(),
+        ...createDto,
+      };
 
       mockUserRepository.findBy.mockResolvedValue(null);
       mockUserRepository.create
@@ -60,8 +55,11 @@ describe('[Spec] User Service', () => {
     });
 
     it('[exception] should be throw conflict exception when user already exist', async () => {
-      const createDto: IUserCreate = createRandomCreateUserDto();
-      const mockFoundUser: IUser = { id: createRandomUserId(), ...createDto };
+      const createDto: IUserCreate = MockUserHelper.createDto();
+      const mockFoundUser: IUser = {
+        id: MockUserHelper.randomId(),
+        ...createDto,
+      };
 
       mockUserRepository.findBy.mockResolvedValue(mockFoundUser);
 
@@ -77,7 +75,7 @@ describe('[Spec] User Service', () => {
 
   describe('[findUser]', () => {
     it(`[success] should be find user by id`, async () => {
-      const mockFoundUser: IUser = createRandomUserDto();
+      const mockFoundUser: IUser = MockUserHelper.dto();
       const query: IUserQuery = { id: mockFoundUser.id };
 
       mockUserRepository.findBy.mockResolvedValue(mockFoundUser);
@@ -88,7 +86,7 @@ describe('[Spec] User Service', () => {
     });
 
     it(`[success] should be find user by email`, async () => {
-      const mockFoundUser: IUser = createRandomUserDto();
+      const mockFoundUser: IUser = MockUserHelper.dto();
       const query: IUserQuery = { email: mockFoundUser.email };
 
       mockUserRepository.findBy.mockResolvedValue(mockFoundUser);
@@ -99,7 +97,7 @@ describe('[Spec] User Service', () => {
     });
 
     it(`[success] should be receive null when user not found`, async () => {
-      const query: IUserQuery = { id: createRandomUserId() };
+      const query: IUserQuery = { id: MockUserHelper.randomId() };
 
       mockUserRepository.findBy.mockResolvedValue(null);
 
@@ -123,7 +121,7 @@ describe('[Spec] User Service', () => {
 
   describe('[updateUser]', () => {
     it(`[success] should be update user`, async () => {
-      const mockFoundUser: IUser = createRandomUserDto();
+      const mockFoundUser: IUser = MockUserHelper.dto();
       const mockUpdateDto = { ...mockFoundUser, nickname: 'new nickname' };
 
       mockUserRepository.findBy.mockResolvedValue(mockFoundUser);
@@ -135,7 +133,7 @@ describe('[Spec] User Service', () => {
     });
 
     it(`[exception] should be throw not found exception when user not found`, async () => {
-      const mockUpdateDto: IUserUpdate = createRandomUpdateUserDto();
+      const mockUpdateDto: IUserUpdate = MockUserHelper.updateDto();
 
       mockUserRepository.findBy.mockResolvedValue(null);
 

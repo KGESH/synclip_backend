@@ -6,11 +6,7 @@ import {
   IUserQuery,
   IUserUpdate,
 } from '../../../src/dtos/user.dto';
-import {
-  createRandomCreateUserDto,
-  createRandomUserEntity,
-  createRandomUserId,
-} from '../../helper/random/user.helper';
+import { MockUserHelper } from '../../helper/random/user.helper';
 import { EntityConflictException } from '../../../src/exceptions/entityConflict.exception';
 import { EntityNotfoundException } from '../../../src/exceptions/entityNotfound.exception';
 import { PrismaClient, User } from '@prisma/client';
@@ -32,7 +28,7 @@ describe('[Spec] User Repository', () => {
       .useValue(mockDeep<PrismaClient>())
       .compile();
 
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
+    userRepository = moduleRef.get(UserRepository);
     mockPrismaClient = moduleRef.get(PrismaService);
   });
 
@@ -44,7 +40,7 @@ describe('[Spec] User Repository', () => {
 
   describe('[findBy]', () => {
     it('[success] should be find user by id', async () => {
-      const mockUser: User = createRandomUserEntity();
+      const mockUser: User = MockUserHelper.entity();
       const mockUserQuery: IUserQuery = { id: mockUser.id };
 
       mockPrismaClient.user.findUniqueOrThrow.mockResolvedValue(mockUser);
@@ -55,7 +51,7 @@ describe('[Spec] User Repository', () => {
     });
 
     it('[success] should be find user by email', async () => {
-      const mockUser: User = createRandomUserEntity();
+      const mockUser: User = MockUserHelper.entity();
       const mockUserQuery: IUserQuery = { email: mockUser.email };
 
       mockPrismaClient.user.findUniqueOrThrow.mockResolvedValue(mockUser);
@@ -66,7 +62,7 @@ describe('[Spec] User Repository', () => {
     });
 
     it('[exception] should be throw EntityNotfoundException', async () => {
-      const mockUserQuery: IUserQuery = { id: createRandomUserId() };
+      const mockUserQuery: IUserQuery = { id: MockUserHelper.randomId() };
 
       mockPrismaClient.user.findUniqueOrThrow.mockRejectedValue(
         mockPrismaEntityNotfoundError(`User not found.`),
@@ -84,9 +80,9 @@ describe('[Spec] User Repository', () => {
 
   describe('[create]', () => {
     it('[success] should be create user', async () => {
-      const createDto: IUserCreate = createRandomCreateUserDto();
+      const createDto: IUserCreate = MockUserHelper.createDto();
       const mockCreatedUser: User = {
-        ...createRandomUserEntity(),
+        ...MockUserHelper.entity(),
         ...createDto,
       };
 
@@ -98,9 +94,9 @@ describe('[Spec] User Repository', () => {
     });
 
     it('[exception] should be throw EntityConflictException', async () => {
-      const createDto: IUserCreate = createRandomCreateUserDto();
+      const createDto: IUserCreate = MockUserHelper.createDto();
       const mockCreatedUser: User = {
-        ...createRandomUserEntity(),
+        ...MockUserHelper.entity(),
         ...createDto,
       };
 
@@ -123,7 +119,7 @@ describe('[Spec] User Repository', () => {
   describe('[update]', () => {
     it('[success] should be update user', async () => {
       const mockUser: User = {
-        ...createRandomUserEntity(),
+        ...MockUserHelper.entity(),
         nickname: 'before',
       };
       const updateDto: IUserUpdate = {
